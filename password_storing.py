@@ -18,19 +18,25 @@ class PasswordAccess:
                 writer.writerow(['Password', 'HashedPassword'])
 
     def search_passwords(self, password):
+        found = "default-value"
         with open(self.filepath, 'r', newline='') as csvfile:
             reader = csv.reader(csvfile)
             for row in reader:
                 if row[0] == password:
                     print("[green]Password found! [blue]" + row[1])
-                    return True
-            return False
+                    found = row[0] + " : " + row[1]
+                    return found
+            return "Password not found"
+        
     def view_passwords(self):
+        passwords = []
         with open(self.filepath, 'r', newline='') as csvfile:
             reader = csv.reader(csvfile)
             for row in reader:
                 print("[green] " + row[0] + "[blue] " + row[1])
-
+                passwords.append((row[0], row[1]))
+            return passwords
+            
     def write_password(self, password):
         hashed_password = self.encryption_manager.hash_password(password)
         in_csv = self.check_existing(password)
