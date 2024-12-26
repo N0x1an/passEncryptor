@@ -42,7 +42,7 @@ class PasswordAccess:
         in_csv = self.check_existing(password)
         if in_csv is True:
             print("Password already encrypted")
-            return
+            return "Password already encrypted"
         else:
             with open(self.filepath, 'a', newline='') as csvfile:
                 writer = csv.writer(csvfile)

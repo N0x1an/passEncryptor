@@ -4,27 +4,6 @@ from PyQt5.QtGui import QFont
 from PyQt5.QtCore import Qt
 from password_storing import PasswordAccess
 
-class StartScreen(QWidget):
-    def __init__(self, parent):
-        super().__init__(parent)
-        self.layout = QVBoxLayout()
-        self.setLayout(self.layout)
-        
-        self.title = QLabel("Password Manager")
-        self.title.setAlignment(Qt.AlignCenter)
-        self.title.setFont(QFont('Arial', 24))
-        
-        self.start_button = QPushButton("Start")
-        self.start_button.setFont(QFont('Arial', 18))
-        self.start_button.clicked.connect(parent.show_main_screen)
-        
-        self.layout.addWidget(self.title)
-        self.layout.addWidget(self.start_button)
-        
-        self.setStyleSheet("background-color: #2c3e50; color: white;")
-        self.title.setStyleSheet("margin-bottom: 50px;")
-        self.start_button.setStyleSheet("background-color: #e74c3c; color: white; padding: 15px; border-radius: 10px;")
-
 class MainScreen(QWidget):
     def __init__(self, parent):
         super().__init__(parent)
@@ -35,7 +14,7 @@ class MainScreen(QWidget):
         self.setLayout(self.layout)
         
         self.input_field = QLineEdit(self)
-        self.input_field.setPlaceholderText("Enter your password or search term")
+        self.input_field.setPlaceholderText("Enter your password")
         self.layout.addWidget(self.input_field)
         
         self.store_button = QPushButton("Store Password", self)
@@ -79,7 +58,10 @@ class MainScreen(QWidget):
     def store_password(self):
         password = self.input_field.text()
         if password:
-            self.password_manager.write_password(password)
+            if (self.password_manager.write_password(password) == "Password already encrypted"):
+                QMessageBox.warning(self, "Input Error", "Password already stored")
+                return
+            self.output_area.clear()
             self.output_area.append("Password stored successfully")
             self.input_field.clear()
         else:
@@ -90,6 +72,7 @@ class MainScreen(QWidget):
         if passwords == []:
             self.output_area.append("No passwords stored")
             return
+        self.output_area.clear()
         self.output_area.append("Viewing all passwords:")
         for password in passwords:
             self.output_area.append(password[0] + " : " + password[1])
@@ -98,6 +81,7 @@ class MainScreen(QWidget):
         password = self.input_field.text()
         if password:
             result = self.password_manager.search_passwords(password)
+            self.output_area.clear()
             self.output_area.append("Search results:")
             self.output_area.append(result)
             self.input_field.clear()
@@ -107,6 +91,7 @@ class MainScreen(QWidget):
     def delete_password(self):
         password = self.input_field.text()
         if password:
+            self.output_area.clear()
             self.password_manager.delete_entry(password)
             self.output_area.append("Password deleted successfully")
             self.input_field.clear()
@@ -120,19 +105,8 @@ class MainWindow(QMainWindow):
         self.setWindowTitle("Password Encryption")
         self.setGeometry(100, 100, 600, 400)
         
-        self.stacked_widget = QStackedWidget()
-        self.setCentralWidget(self.stacked_widget)
-        
-        self.start_screen = StartScreen(self)
         self.main_screen = MainScreen(self)
-        
-        self.stacked_widget.addWidget(self.start_screen)
-        self.stacked_widget.addWidget(self.main_screen)
-        
-        self.show_start_screen()
-        
-    def show_start_screen(self):
-        self.stacked_widget.setCurrentWidget(self.start_screen)
+        self.setCentralWidget(self.main_screen)
         
     def show_main_screen(self):
         self.stacked_widget.setCurrentWidget(self.main_screen)
